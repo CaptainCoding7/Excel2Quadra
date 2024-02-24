@@ -1,4 +1,4 @@
-# QuadraImport
+# Excel2Quadra
 ![image](https://github.com/CaptainCoding7/QuadraImport/assets/46071575/b8bfdeb4-cccb-4a58-b984-01aa069ff70b)
 
 Ce logiciel permet de transformer un relevé bancaire (au format excel) en un fichier excel pouvant être importé dans le logiciel Quadra Compta. Voici la procédure à suivre pour importer un rélevé dans Quadra Compta grâce à Excel2Quadra.<br>
