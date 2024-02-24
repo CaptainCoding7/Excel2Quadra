@@ -16,9 +16,9 @@ class WriteEntries:
         'Crédit': [],
     }
 
-    def __init__(self, dates, debits, credits, libelles):
-        self._CTRPARTIE = 51200000
-        self._DEFCOMPTE = 47100000
+    def __init__(self, dates, debits, credits, libelles, defcompte, ctrpartie):
+        self._DEFCOMPTE = defcompte
+        self._CTRPARTIE = ctrpartie
         self.datevalues = dates
         self.debitvalues = debits
         self.creditvalues = credits

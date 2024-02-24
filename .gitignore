@@ -1,2 +1,5 @@
 outputs*
 __pycache*
+Build*
+dist*
+*.spec

@@ -1,58 +1,34 @@
 
-
-#UNUSED
-# Import openpyxl 
-import openpyxl
-import tabula
-import fuckit
-
 import pandas as pd
 import datetime as dt
 from enum import Enum
-from kivy.app import App
-from kivy.uix.widget import Widget
+from tkinter.messagebox import showinfo
 
 from readBankStatement import ReadBankStatement
 from utils import QuadraPyUtils as Utils
 from writeEntries import WriteEntries
-from tkinter import Tk     # from tkinter import Tk for Python 3.x
-from tkinter.filedialog import askopenfilename
-from aenum import Enum
 
-  
 
 class Mode(Enum):
 
-    _init_ = 'value string'
-
-    WRITE_DEBIT = 1, 'Ecrire débits'
-    WRITE_CREDIT = 2, 'Ecrire crédits'
-    WRITE_ALL_BY_DATES = 3, 'Ecrire débits et crédits (selon date)'
-    WRITE_ALL_DEB_CRED = 4, 'Ecrire débits PUIS crédits'
-
-    def __str__(self):
-        return self.string
-
+    WRITE_DEBIT = 'Ecrire débits'
+    WRITE_CREDIT = 'Ecrire crédits'
+    WRITE_ALL_BY_DATES = 'Ecrire débits et crédits (selon date)'
+    WRITE_ALL_DEB_CRED = 'Ecrire débits PUIS crédits'
 
 class Excel2Quadra:
 
-    def __init__(self, fileIn, fileOut, enableExtraLibelle, mode):
+    def __init__(self, fileIn, fileOut, enableExtraLibelle, mode, numCompte, ctrpartie):
         self.fileIn = fileIn
         self.fileOut = fileOut
         self.enableExtraLibelle = enableExtraLibelle
         self.mode = mode
+        self.defNumCompte = numCompte
+        self.contrepartie = ctrpartie
 
 
     def runApp(self):
 
-        print(self.fileIn)
-        print(self.fileOut)
-        print(self.enableExtraLibelle)
-        print(self.mode)
-
-        #path = "../releves_excel/Relevé_cameleon.xlsx"
-        #path = "../releves_excel/releve_vintagebar.xlsx"
-        #path =  "../releves_excel/Fiducial_RELEVE MENSUEL.xlsx"
         releve = ReadBankStatement(self.fileIn)
         
         # Si l option ajoutant la deuxieme ligne au libelle est activée
@@ -60,21 +36,31 @@ class Excel2Quadra:
             releve.libellevalues = Utils.addExtraLibelle(releve.datevalues, releve.libellevalues)
 
         # Instancier un objet d ecriture des donnees dans l excel de sortie
-        writer = WriteEntries(releve.datevalues, releve.debitvalues, releve.creditvalues, releve.libellevalues)
+        writer = WriteEntries(releve.datevalues, releve.debitvalues, releve.creditvalues, releve.libellevalues, self.defNumCompte, self.contrepartie)
 
         # Editer le fichier excel de sortie selon le mode choisi
         if self.mode == Mode.WRITE_ALL_BY_DATES:
             writer.writeAllByDate()
+            strDescr = "des débits et crédits "
         elif self.mode == Mode.WRITE_ALL_DEB_CRED:
             writer.writeAllDebitsThenCredits()
+            strDescr = "des débits et crédits "
         elif self.mode == Mode.WRITE_DEBIT:
             writer.writeDebits()
+            strDescr = "des débits "
         elif self.mode == Mode.WRITE_CREDIT:
             writer.writeCredits()
+            strDescr = "des crédits "
+        else:
+            print("Error unknown mode")
+            return -1
         
         # Ecrire le dataframe globale dans le fichier excel de sortie
         writer.dfout.to_excel("outputs/"+self.fileOut, startcol=1, startrow=3, sheet_name="data", index=False)
-
+        showinfo(
+            title = "Fin",
+            message = "Fin de l'écriture " + strDescr +"dans " + self.fileOut 
+        )
 
 '''
 Si un debit ou credit n est pas aligne avec la date (mauvaise ligne ou meme mauvaise colonne) 
@@ -94,11 +80,18 @@ Liste des courses:
     > debits/credits par date
     > debits puis credits (default)
 - Cocher case pour inclure seconde ligne de libelle
+- Afficher fichier d'entrée chargé
+- Choisir dossier de sortie
+- Message popup chargement ok + fails => class pop up appelée par class Excel2Quadra
+
 - Nice to have:
+
     + Indiquer format de date manuellement
     + Indiquer colonne manuellement
     + Atribuer un compte au libelle (ex: libelle contient "oxyplast" => 9OXYPLAST)
       en utilisant des couples de valeurs  [ substring  | compte ]
+    + Choisir année (et mois ?)
+    + Ne choisir que les dates du mois considéré (pas les dates du début du second mois)
 
 (- Choisir les attributs généraux suivants:      
     _DEFCOMPTE = 47100000

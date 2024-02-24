@@ -19,7 +19,7 @@ class ReadBankStatement:
         self.libellevalues = self.getLibelleDict()    
 
         # ENABLE/DISABLE DEBUG PRINT
-        if 1:
+        if 0:
             print("\n***** DATES **** \n")
             print(self.datevalues)
             print("\n***** DEBITS **** \n")
@@ -42,7 +42,6 @@ class ReadBankStatement:
                     # Si un label est trouvé
                     if (label in str(cell)) and cellIdx < 50:
                         # Retourner la colonne
-                        print(str(cell))
                         return column[cellIdx:]
         print("ERROR : No column returned")
         return -1
