@@ -3,4 +3,5 @@ python -m PyInstaller --noconfirm --log-level=WARN ^
     --hidden-import=pandas ^
     --hidden-import=datetime ^
     --hidden-import=enum ^
+    --hidden-import=os ^
     main.py
