@@ -3,6 +3,7 @@ import pandas as pd
 import datetime as dt
 from enum import Enum
 from tkinter.messagebox import showinfo
+import os
 
 from readBankStatement import ReadBankStatement
 from utils import QuadraPyUtils as Utils
@@ -55,8 +56,12 @@ class Excel2Quadra:
             print("Error unknown mode")
             return -1
         
+        output_dir = "outputs_releves_transformes"
+
+        if not os.path.exists(output_dir):
+            os.makedirs(output_dir)
         # Ecrire le dataframe globale dans le fichier excel de sortie
-        writer.dfout.to_excel("outputs/"+self.fileOut, startcol=1, startrow=3, sheet_name="data", index=False)
+        writer.dfout.to_excel(output_dir+"/"+self.fileOut, startcol=1, startrow=3, sheet_name="data", index=False)
         showinfo(
             title = "Fin",
             message = "Fin de l'écriture " + strDescr +"dans " + self.fileOut 
