@@ -10,7 +10,7 @@ class Gui:
     def __init__(self):
         # create the root window
         root = Tk()
-        root.title('QuadraPyImport')
+        root.title('Excel2Quadra')
         root.resizable(False, False)
         root.geometry('600x400')
         root.eval('tk::PlaceWindow . center')
@@ -83,7 +83,7 @@ class Gui:
         # run button
         run_button = Button(
             root,
-            text='Lancer la conversion',
+            text='Transformer le relevé',
             command=self.run
         )
         run_button.pack(expand=True)
