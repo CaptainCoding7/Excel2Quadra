@@ -8,6 +8,7 @@ class ReadBankStatement:
         self.path = path
         self.dfIn = pd.read_excel(path, dtype = str)
         self._YEAR = '2023'
+        self.colIdxToExclude = -1
 
         # Get a dictionnary with all the dates
         self.datevalues = self.getDateDict()
@@ -33,16 +34,19 @@ class ReadBankStatement:
     def findColumnFromLabel(self, labellist):
         # Iterate over columns
             # WITH OPENPYXL : for column in sheet.iter_cols():
+        print("********")
         for (idx,col) in enumerate(self.dfIn.columns):
-            column = self.dfIn[col]
-            # Iterate over column cells
-            for cellIdx, cell in column.items():
-                # Parmi les labels
-                for label in labellist:
-                    # Si un label est trouvé
-                    if (label in str(cell)) and cellIdx < 50:
-                        # Retourner la colonne
-                        return column[cellIdx:]
+            # If the current column is not the one to exclude
+            if idx != self.colIdxToExclude:
+                column = self.dfIn[col]
+                # Iterate over column cells
+                for cellIdx, cell in column.items():
+                    # Parmi les labels
+                    for label in labellist:
+                        # Si un label est trouvé
+                        if (label in str(cell)) and cellIdx < 50:
+                            # Retourner la colonne
+                            return (column[cellIdx:],idx)
         print("ERROR : No column returned")
         return -1
 
@@ -54,7 +58,10 @@ class ReadBankStatement:
         dates = dict() 
         
         # Find the corresponding column
-        datecolumn = self.findColumnFromLabel(["Date", "DATE"])
+        (datecolumn, dateColIdx) = self.findColumnFromLabel(["Date", "DATE"])
+
+        # Indicate that the date column must not be find anymore 
+        self.colIdxToExclude = dateColIdx
 
         # Iterate over the cells in the column 
         for i, cell in enumerate(datecolumn): 
@@ -62,7 +69,8 @@ class ReadBankStatement:
             if not pd.isnull(cell):      
                 # SI il n y a pas deja une clé i                         
                 if i not in dates.keys():    
-                # Essayer de formatter la date
+                # Essayer de formatter la date 
+                # CheatSheet formats: https://strftime.org/
                     try:
                         # Gerer d abord un cas particulier avec le mois d octobre qui peut etre confondu avec janvier
                         dates[i] = dt.datetime.strptime(str(cell), '%d.1').strftime('%d/10/'+ self._YEAR)
@@ -74,10 +82,14 @@ class ReadBankStatement:
                                 dates[i] = dt.datetime.strptime(str(cell), '%d.%m.%y').strftime('%d/%m/'+ self._YEAR)
                             except ValueError or TypeError:
                                 try:
-                                    dates[i] = dt.datetime.strptime(str(cell), '%Y-%m-%d %H:%M:%S').strftime('%d/%m/'+ self._YEAR)
-                                    # THIS IS NOT A DATE !
+                                    dates[i] = dt.datetime.strptime(str(cell), '%-d.%m.%y').strftime('%d/%m/'+ self._YEAR)
                                 except ValueError or TypeError:
-                                    pass
+                                    try:
+                                        dates[i] = dt.datetime.strptime(str(cell), '%Y-%m-%d %H:%M:%S').strftime('%d/%m/'+ self._YEAR)
+                                        # THIS IS NOT A DATE !
+                                    except ValueError or TypeError:
+                                        print(cell)
+                                        pass
                 else:
                     print("Error, entrée de date dupliquée pour la colonne ", i)
         return dates
@@ -89,7 +101,7 @@ class ReadBankStatement:
         debits = dict()
 
         # Find the corresponding column
-        debitcolumn = self.findColumnFromLabel(["Débit", "DEBIT"])
+        (debitcolumn, idx) = self.findColumnFromLabel(["Débit", "DEBIT"])
 
         # Iterate over the cells in the column 
         for i, cell in enumerate(debitcolumn): 
@@ -127,7 +139,7 @@ class ReadBankStatement:
         credits = dict()
 
         # Find the corresponding column
-        creditcolumn = self.findColumnFromLabel(["Crédit", "CREDIT"])
+        (creditcolumn, idx) = self.findColumnFromLabel(["Crédit", "CREDIT"])
 
         # Iterate over the cells in the column 
         for i, cell in enumerate(creditcolumn): 
@@ -166,7 +178,7 @@ class ReadBankStatement:
         libelles = dict()
 
         # Find the corresponding column
-        libellecolumn = self.findColumnFromLabel(["Libellé", "Référence", "Nature", "NATURE"])
+        (libellecolumn, idx) = self.findColumnFromLabel(["Libellé", "Référence", "Nature", "NATURE"])
 
         # Iterate over the cells in the column 
         for i, cell in enumerate(libellecolumn): 
