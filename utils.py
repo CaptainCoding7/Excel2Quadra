@@ -13,9 +13,9 @@ class QuadraPyUtils():
         # Par defaut le numPiece de retour est vide
         retNumPiece = ''
 
-        virtList = {"Virement", "virement", "VIREMENT", "VIRT"}
+        virtList = {"Virement", "virement", "VIREMENT", "VIRT", "VIR "}
         cbList = {"CB", "CARTE", "Carte"}
-        prlvList = {"Prélèvement", "Prelevement", "Prlv", "PRLV"}
+        prlvList = {"Prélèvement", "Prelevement", "Prlv", "PRLV", "PRVL"}
         abonList = {"Abonnement", "Abon"}
         rcList = {"Remise", "remise", "chèque", "cheque", "Chèque", "Cheque"}
 
