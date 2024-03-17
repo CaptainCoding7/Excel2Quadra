@@ -92,7 +92,7 @@ class WriteEntries:
                 # Recuperer le libelle de l operation courante
                 libelle = self.libellevalues[debitrow]
             except KeyError:
-                print("Pas de key pour le libelle associe au debit courant: ",debit)
+                print("WARNING: Pas de key pour le libelle associe au debit courant: ",debit)
                 pass            
             else:
                 # Si il ne s'agit pas d'une ligne décrivant le solde
@@ -125,7 +125,7 @@ class WriteEntries:
                 # Recuperer le libelle de l operation courante
                 libelle = self.libellevalues[creditrow]
             except KeyError:
-                print("Pas de key pour le libelle associe au credit courant : ", credit)
+                print("WARNING: Pas de key pour le libelle associe au credit courant : ", credit)
                 pass            
             else:
                 # Si il ne s'agit pas d'une ligne décrivant le solde
