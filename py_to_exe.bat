@@ -4,4 +4,4 @@ python -m PyInstaller --noconfirm --log-level=WARN ^
     --hidden-import=datetime ^
     --hidden-import=enum ^
     --hidden-import=os ^
-    Gui_main.py
+    src_py/Gui_main.py
