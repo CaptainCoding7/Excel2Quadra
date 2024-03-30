@@ -1,12 +1,14 @@
 import pandas as pd
 import datetime as dt
 from utils import QuadraPyUtils as Utils
+from tkinter.messagebox import showinfo
+
 
 class ReadBankStatement:
 
-    def __init__(self,path):
-        self.path = path
-        self.dfIn = pd.read_excel(path, dtype = str)
+    def __init__(self,df):
+        self.dfIn = df
+
         self._YEAR = '2023'
         self.colIdxToExclude = -1
 

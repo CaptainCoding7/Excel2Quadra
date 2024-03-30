@@ -19,53 +19,67 @@ class Mode(Enum):
 
 class Excel2Quadra:
 
-    def __init__(self, fileIn, fileOut, enableExtraLibelle, mode, numCompte, ctrpartie):
+    def __init__(self, fileIn, fileOut, enableExtraLibelle, mode, numCompte, ctrpartie, dictCpt):
         self.fileIn = fileIn
         self.fileOut = fileOut
         self.enableExtraLibelle = enableExtraLibelle
         self.mode = mode
         self.defNumCompte = numCompte
         self.contrepartie = ctrpartie
+        self.dictCompte = dictCpt
+
+        print(self.dictCompte)
 
 
     def runApp(self):
 
-        releve = ReadBankStatement(self.fileIn)
-        
-        # Si l option ajoutant la deuxieme ligne au libelle est activée
-        if self.enableExtraLibelle == True:
-            releve.libellevalues = Utils.addExtraLibelle(releve.datevalues, releve.libellevalues)
+        try:
+            self.dfIn = pd.read_excel(self.fileIn, dtype = str)
 
-        # Instancier un objet d ecriture des donnees dans l excel de sortie
-        writer = WriteEntries(releve.datevalues, releve.debitvalues, releve.creditvalues, releve.libellevalues, self.defNumCompte, self.contrepartie)
-
-        # Editer le fichier excel de sortie selon le mode choisi
-        if self.mode == Mode.WRITE_ALL_BY_DATES:
-            writer.writeAllByDate()
-            strDescr = "des débits et crédits "
-        elif self.mode == Mode.WRITE_ALL_DEB_CRED:
-            writer.writeAllDebitsThenCredits()
-            strDescr = "des débits et crédits "
-        elif self.mode == Mode.WRITE_DEBIT:
-            writer.writeDebits()
-            strDescr = "des débits "
-        elif self.mode == Mode.WRITE_CREDIT:
-            writer.writeCredits()
-            strDescr = "des crédits "
+        except ValueError:    
+            showinfo(
+            title = "Erreur",
+            message = "Veuillez choisir le fichier excel d'entrée ! " 
+            )
         else:
-            print("Error unknown mode")
-            return -1
-        
-        output_dir = "outputs_releves_transformes"
 
-        if not os.path.exists(output_dir):
-            os.makedirs(output_dir)
-        # Ecrire le dataframe globale dans le fichier excel de sortie
-        writer.dfout.to_excel(output_dir+"/"+self.fileOut, startcol=1, startrow=3, sheet_name="data", index=False)
-        showinfo(
-            title = "Fin",
-            message = "Fin de l'écriture " + strDescr +"dans " + self.fileOut 
-        )
+            releve = ReadBankStatement(self.dfIn)
+        
+            # Si l option ajoutant la deuxieme ligne au libelle est activée
+            if self.enableExtraLibelle == True:
+                releve.libellevalues = Utils.addExtraLibelle(releve.datevalues, releve.libellevalues)
+
+            # Instancier un objet d ecriture des donnees dans l excel de sortie
+            writer = WriteEntries(releve.datevalues, releve.debitvalues, releve.creditvalues, releve.libellevalues, self.defNumCompte, self.contrepartie, self.dictCompte)
+
+            # Editer le fichier excel de sortie selon le mode choisi
+            if self.mode == Mode.WRITE_ALL_BY_DATES:
+                writer.writeAllByDate()
+                strDescr = "des débits et crédits "
+            elif self.mode == Mode.WRITE_ALL_DEB_CRED:
+                writer.writeAllDebitsThenCredits()
+                strDescr = "des débits et crédits "
+            elif self.mode == Mode.WRITE_DEBIT:
+                writer.writeDebits()
+                strDescr = "des débits "
+            elif self.mode == Mode.WRITE_CREDIT:
+                writer.writeCredits()
+                strDescr = "des crédits "
+            else:
+                print("Error unknown mode")
+                return -1
+            
+            output_dir = "outputs_releves_transformes"
+
+            if not os.path.exists(output_dir):
+                os.makedirs(output_dir)
+            # Ecrire le dataframe globale dans le fichier excel de sortie
+            writer.dfout.to_excel(output_dir+"/"+self.fileOut, startcol=1, startrow=3, sheet_name="data", index=False)
+            showinfo(
+                title = "Fin",
+                message = "Fin de l'écriture " + strDescr +"dans " + self.fileOut 
+            )
+
 
 '''
 Si un debit ou credit n est pas aligne avec la date (mauvaise ligne ou meme mauvaise colonne) 
