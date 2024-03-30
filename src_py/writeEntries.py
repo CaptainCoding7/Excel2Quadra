@@ -16,47 +16,25 @@ class WriteEntries:
         'Crédit': [],
     }
 
-    def __init__(self, dates, debits, credits, libelles, defcompte, ctrpartie):
+    def __init__(self, dates, debits, credits, libelles, defcompte, ctrpartie, dictCpt):
         self._DEFCOMPTE = defcompte
         self._CTRPARTIE = ctrpartie
         self.datevalues = dates
         self.debitvalues = debits
         self.creditvalues = credits
         self.libellevalues = libelles
+        self.dictCompte= dict(dictCpt)
         self.dfout = pd.DataFrame(self.entryLines)
 
-    def addDebit(self, date, libelle, numPiece, debit):
-        
+    
+    def add_Entry(self, date, libelle, compte, numPiece, debit, credit):
         newEntry = {
             'Date' : date, 
-            'Compte': self._DEFCOMPTE, 
+            'Compte': compte, 
             'Libellé': libelle , 
             'Contrepartie': self._CTRPARTIE, 
             'Num.Pièce': numPiece, 
             'Débit': debit, 
-            'Crédit': ''
-        }
-        newCtPrtEntry = {
-            'Date' : date, 
-            'Compte': self._CTRPARTIE, 
-            'Libellé': libelle, 
-            'Contrepartie': self._CTRPARTIE, 
-            'Num.Pièce': numPiece, 
-            'Débit': '', 
-            'Crédit': debit
-        }
-
-        return (newEntry, newCtPrtEntry)
-
-
-    def addCredit(self, date, libelle, numPiece, credit):
-        newEntry = {
-            'Date' : date, 
-            'Compte': self._DEFCOMPTE, 
-            'Libellé': libelle , 
-            'Contrepartie': self._CTRPARTIE, 
-            'Num.Pièce': numPiece, 
-            'Débit': '', 
             'Crédit': credit
         }
         newCtPrtEntry = {
@@ -66,12 +44,29 @@ class WriteEntries:
             'Contrepartie': self._CTRPARTIE, 
             'Num.Pièce': numPiece, 
             'Débit': credit, 
-            'Crédit': ''
+            'Crédit': debit
         }
-
         return (newEntry, newCtPrtEntry)
+    
+    def addDebit(self, date, libelle, compte, numPiece, debit):
+        return self.add_Entry(date, libelle, compte, numPiece, debit, '')
+
+    def addCredit(self, date, libelle, compte, numPiece, credit):
+        return self.add_Entry(date, libelle, compte, numPiece, '', credit)
+    
 
 
+    def checkForCompte(self,libelle):
+        compte = self._DEFCOMPTE
+        # Parcourir le dictionnaire des numéros de compte
+        for numCompte  in self.dictCompte.keys():
+            # Recupérer l'extrait de libelle associé au numéro de compte
+            pattern = self.dictCompte.get(numCompte)
+            # Si le libellé contient l'extrait
+            if pattern.lower() in libelle.lower():
+                compte = numCompte
+        return compte
+    
 
     def writeNewEntry(self, newEntry, newCtrpEntry):
 
@@ -91,6 +86,8 @@ class WriteEntries:
             try:
                 # Recuperer le libelle de l operation courante
                 libelle = self.libellevalues[debitrow]
+                compte = self.checkForCompte(libelle)
+                 
             except KeyError:
                 print("WARNING: Pas de key pour le libelle associe au debit courant: ",debit)
                 pass            
@@ -108,7 +105,7 @@ class WriteEntries:
                         numPiece = Utils.getNumPiece(libelle)
 
                         # Creer une entree de crédit
-                        (newEntry, newCtrpEntry) = self.addDebit(date,libelle, numPiece, debit)
+                        (newEntry, newCtrpEntry) = self.addDebit(date,libelle, compte, numPiece, debit)
                         # Ajouter la nouvelle entrée
                         self.writeNewEntry(newEntry, newCtrpEntry)
 
@@ -124,6 +121,8 @@ class WriteEntries:
             try:
                 # Recuperer le libelle de l operation courante
                 libelle = self.libellevalues[creditrow]
+                compte = self.checkForCompte(libelle)
+                 
             except KeyError:
                 print("WARNING: Pas de key pour le libelle associe au credit courant : ", credit)
                 pass            
@@ -140,8 +139,8 @@ class WriteEntries:
                         # Get the numPiece
                         numPiece = Utils.getNumPiece(libelle)
 
-                        # Creer une entree de crédit
-                        (newEntry, newCtrpEntry) = self.addCredit(date,libelle, numPiece, credit)
+                        # Creer une entree de crédit avec compte 47100000 par defaut
+                        (newEntry, newCtrpEntry) = self.addCredit(date,libelle, compte,numPiece, credit)
                         # Ajouter la nouvelle entrée
                         self.writeNewEntry(newEntry, newCtrpEntry)
 
@@ -151,7 +150,6 @@ class WriteEntries:
 
         self.writeDebits()
         self.writeCredits()
-
 
 
     # Ecrire d'après l'ordre des dates les debits et les credits dans le fichier excel de sortie 
@@ -165,7 +163,8 @@ class WriteEntries:
 
             # Recuperer le libelle de l operation courante
             libelle = self.libellevalues[daterow]
-        
+            compte = self.checkForCompte(libelle)
+                 
             # Get the numPiece
             numPiece = Utils.getNumPiece(libelle)
 
@@ -177,7 +176,7 @@ class WriteEntries:
                     # Oui, un debit est sur la meme ligne !
                     debit = self.debitvalues[daterow]
                     # Creer une entree de débit
-                    (newEntry, newCtrpEntry) = self.addDebit(date,libelle, numPiece, debit)
+                    (newEntry, newCtrpEntry) = self.addDebit(date, libelle, compte, numPiece, debit)
                 # Non !
                 except KeyError:
                     # Est ce un credit
@@ -185,7 +184,7 @@ class WriteEntries:
                         # Oui, un credit est sur la meme ligne !
                         credit = self.creditvalues[daterow]
                         # Creer une entree de crédit
-                        (newEntry, newCtrpEntry) = self.addCredit(date,libelle, numPiece, credit)
+                        (newEntry, newCtrpEntry) = self.addCredit(date, libelle, compte, numPiece, credit)
                     except KeyError:
                         print("Pas de données de débit ou crédit pour la date du ",self.datevalues[daterow])
                     else:
