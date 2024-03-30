@@ -17,6 +17,7 @@ class Gui:
 
         self.mode = Mode.WRITE_ALL_DEB_CRED
         self.extraLibelle = True
+        self.dictCompte = dict()
 
         # Choix fichier entrée
         open_button = Button(
@@ -80,6 +81,15 @@ class Gui:
         )
         extraLibelleBut.pack(expand=True)
 
+
+        # newCompte button
+        newCompte_button = Button(
+            root,
+            text='Ajouter un compte récurrent',
+            command=self.addNewCompte
+        )
+        newCompte_button.pack(expand=True)
+
         # run button
         run_button = Button(
             root,
@@ -87,6 +97,7 @@ class Gui:
             command=self.run
         )
         run_button.pack(expand=True)
+
 
         self.fileIn = None
         self.App = root
@@ -110,13 +121,38 @@ class Gui:
     def setExtraLibelle(self):
         self.extraLibelle = self.exLibButtonValue.get()
 
-    def run(self):
+    def addNewCompte(self):
 
-        self.fileOut = str(self.entryFileout.get()) + '.xlsx'
-        self.defNumCompte = str(self.entryNumCompte.get()) 
-        self.ctrPartie = str(self.entryCtrPartie.get()) 
-        e2q = Excel2Quadra(self.fileIn, self.fileOut, self.extraLibelle, self.mode, self.defNumCompte, self.ctrPartie)
-        e2q.runApp()
+        newCompteFen = Tk()
+        newCompteFen.title('Ajouter un numéro de compte récurrent')
+        newCompteFen.resizable(False, False)
+        newCompteFen.geometry('200x200')
+        newCompteFen.eval('tk::PlaceWindow . center')  
+
+        # Champ de saisie pour le nouveau numero de compte
+        label1 = Label(newCompteFen, text="Nouveau numéro de compte")
+        label1.pack(expand=True)
+        newCompte = StringVar() 
+        newCompte.set("47100000") 
+        self.entryNewCompte = Entry(newCompteFen, bd =5, textvariable = newCompte)
+        self.entryNewCompte.pack(expand=True)
+
+        # Champ de saisie pour l extrait de libelle associ&é
+        label2 = Label(newCompteFen, text="Extrait de libellé associé")
+        label2.pack(expand=True)
+        libelleCompte = StringVar() 
+        self.entryLibelleCompte = Entry(newCompteFen, bd =5, textvariable = libelleCompte)
+        self.entryLibelleCompte.pack(expand=True)
+
+        # run button
+        addCompte_button = Button(
+            newCompteFen,
+            text='Ajouter',
+            command=self.run_addCompte
+        )
+        addCompte_button.pack(expand=True)
+        self.newCompteFen = newCompteFen
+
 
     def popUpMsg(self, strTitle, strDescr):
         showinfo(
@@ -124,7 +160,20 @@ class Gui:
             message = strDescr
         )
 
+    def run_addCompte(self):
 
+        compte = str(self.entryNewCompte.get()) 
+        libelle = str(self.entryLibelleCompte.get()) 
+        self.dictCompte[compte] = libelle
+        self.newCompteFen.destroy()
+
+    def run(self):
+
+        self.fileOut = str(self.entryFileout.get()) + '.xlsx'
+        self.defNumCompte = str(self.entryNumCompte.get()) 
+        self.ctrPartie = str(self.entryCtrPartie.get()) 
+        e2q = Excel2Quadra(self.fileIn, self.fileOut, self.extraLibelle, self.mode, self.defNumCompte, self.ctrPartie, self.dictCompte)
+        e2q.runApp()
 
 gui = Gui()
 # run the application
