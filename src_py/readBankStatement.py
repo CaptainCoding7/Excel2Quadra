@@ -3,7 +3,6 @@ import datetime as dt
 from utils import QuadraPyUtils as Utils
 from tkinter.messagebox import showinfo
 
-
 class ReadBankStatement:
 
     def __init__(self,df):
@@ -49,7 +48,7 @@ class ReadBankStatement:
                         if (label in str(cell)) and cellIdx < 50:
                             # Retourner la colonne
                             return (column[cellIdx:],idx)
-        print("ERROR : No column returned")
+        log.error("ERROR : No column returned")
         return -1
 
 
@@ -90,10 +89,10 @@ class ReadBankStatement:
                                         dates[i] = dt.datetime.strptime(str(cell), '%Y-%m-%d %H:%M:%S').strftime('%d/%m/'+ self._YEAR)
                                         # THIS IS NOT A DATE !
                                     except ValueError or TypeError:
-                                        print(cell)
+                                        print("ERROR - Format de date incorrect: ", cell)
                                         pass
                 else:
-                    print("Error, entrée de date dupliquée pour la colonne ", i)
+                    log.error("Error, entrée de date dupliquée pour la colonne ", i)
         return dates
 
     # This function return the debits from the corresponding column
@@ -168,7 +167,7 @@ class ReadBankStatement:
                         #If it's a float add the cell to the list
                         credits[i] = cell
                 else:
-                    print("Error, entrée de débit dupliquée pour la colonne ", i)
+                    log.error("Error, entrée de débit dupliquée pour la colonne ", i)
 
         return credits
         
@@ -191,7 +190,7 @@ class ReadBankStatement:
                 if i not in libelles.keys():
                     libelles[i] = str(cell)[0:30]
                 else:
-                    print("Error, entrée de crédit dupliquée pour la colonne ", i)
+                    log.error("Error, entrée de crédit dupliquée pour la colonne ", i)
 
         return libelles  
     

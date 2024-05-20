@@ -4,6 +4,10 @@ from tkinter.messagebox import showinfo
 from Excel2Quadra import Excel2Quadra
 from Excel2Quadra import Mode
 
+#import sys 
+
+#log = open("err.log", "a")
+#sys.stderr = log
 
 class Gui:
 
@@ -23,7 +27,7 @@ class Gui:
         open_button = Button(
             root,
             text='Sélectionner le relevé bancaire à transformer (format Excel)',
-            command=self.select_file
+            command=self.select_fileIn
         )
         open_button.pack(expand=True)
         
@@ -82,13 +86,13 @@ class Gui:
         extraLibelleBut.pack(expand=True)
 
 
-        # newCompte button
-        newCompte_button = Button(
+        # Choix fichier de comptes
+        open_button = Button(
             root,
-            text='Ajouter un compte récurrent',
-            command=self.addNewCompte
+            text='Ajouter des comptes récurrent (format Excel)',
+            command=self.select_fileComptes
         )
-        newCompte_button.pack(expand=True)
+        open_button.pack(expand=True)
 
         # run button
         run_button = Button(
@@ -99,21 +103,27 @@ class Gui:
         run_button.pack(expand=True)
 
 
-        self.fileIn = None
-        self.App = root
-
-    def select_file(self):
-
-        filetypes = (
+        self.filetypes = (
             ('Excel', '*.xlsx'),
             ('All files', '*.*')
         )
+        self.fileIn = None
+        self.fileComptes = None
+        self.App = root
+
+    def select_fileIn(self):
 
         self.fileIn = fd.askopenfilename(
-            title='Open a File',
+            title='Choisir un fichier Excel',
             initialdir='./',
-            filetypes=filetypes)
+            filetypes=self.filetypes)
+        
+    def select_fileComptes(self):
 
+        self.fileComptes = fd.askopenfilename(
+            title='Choisir un fichier Excel',
+            initialdir='./',
+            filetypes=self.filetypes)
 
     def getMode(self, choosedMode):
         self.mode = Mode(choosedMode)
@@ -124,7 +134,7 @@ class Gui:
     def addNewCompte(self):
 
         newCompteFen = Tk()
-        newCompteFen.title('Ajouter un numéro de compte récurrent')
+        newCompteFen.title('Ajouter des numéros de compte récurrents')
         newCompteFen.resizable(False, False)
         newCompteFen.geometry('200x200')
         newCompteFen.eval('tk::PlaceWindow . center')  
@@ -172,8 +182,9 @@ class Gui:
         self.fileOut = str(self.entryFileout.get()) + '.xlsx'
         self.defNumCompte = str(self.entryNumCompte.get()) 
         self.ctrPartie = str(self.entryCtrPartie.get()) 
-        e2q = Excel2Quadra(self.fileIn, self.fileOut, self.extraLibelle, self.mode, self.defNumCompte, self.ctrPartie, self.dictCompte)
+        e2q = Excel2Quadra(self.fileIn, self.fileComptes, self.fileOut, self.extraLibelle, self.mode, self.defNumCompte, self.ctrPartie)
         e2q.runApp()
+
 
 gui = Gui()
 # run the application

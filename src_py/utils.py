@@ -1,3 +1,24 @@
+import pandas as pd
+import logging
+import sys
+
+'''
+logger = logging.getLogger()
+logger.setLevel(logging.INFO)
+formatter = logging.Formatter('%(asctime)s | %(levelname)s | %(message)s')
+
+stdout_handler = logging.StreamHandler(sys.stdout)
+stdout_handler.setLevel(logging.DEBUG)
+stdout_handler.setFormatter(formatter)
+
+
+file_handler = logging.FileHandler('logs.log')
+file_handler.setLevel(logging.DEBUG)
+file_handler.setFormatter(formatter)
+
+logger.addHandler(file_handler)
+logger.addHandler(stdout_handler)
+'''
 
 class QuadraPyUtils():
 
@@ -84,3 +105,25 @@ class QuadraPyUtils():
                 libellevalues[daterow] = libelle +  extralibelle
 
         return libellevalues
+    
+
+    def readListeCompte(dfComptes):
+
+        dictComptes = dict()
+
+        # Pour chaque ligne
+        for rowIdx, row in dfComptes.iterrows():
+            # Le premier element de la ligne est un num de compte
+            compte = row[0]
+            if compte is not None :
+                patternList = []
+                # Parcourir la ligne courante
+                for pattern in row[1:]:
+                    # Si la cellule est non vide
+                    if (pattern is not None) and (pd.isna(pattern)==False):
+                        # Ajouter le pattern a la lite associée à la ligne
+                        patternList.append(str(pattern))
+                # Définir la nouvelle paire clé/valeurS pour ce numéro de compte
+                dictComptes[compte] = patternList
+
+        return dictComptes

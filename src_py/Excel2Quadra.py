@@ -19,19 +19,22 @@ class Mode(Enum):
 
 class Excel2Quadra:
 
-    def __init__(self, fileIn, fileOut, enableExtraLibelle, mode, numCompte, ctrpartie, dictCpt):
+    def __init__(self, fileIn, fileComptes, fileOut, enableExtraLibelle, mode, numCompte, ctrpartie):
         self.fileIn = fileIn
+        self.fileComptes = fileComptes
         self.fileOut = fileOut
         self.enableExtraLibelle = enableExtraLibelle
         self.mode = mode
         self.defNumCompte = numCompte
         self.contrepartie = ctrpartie
-        self.dictCompte = dictCpt
-
-        print(self.dictCompte)
+        self.dictCompte = dict()
 
 
     def runApp(self):
+
+        if self.fileComptes is not None:
+            self.dfComptes = pd.read_excel(self.fileComptes, header=None, dtype = str)
+            self.dictCompte = Utils.readListeCompte(self.dfComptes)
 
         try:
             self.dfIn = pd.read_excel(self.fileIn, dtype = str)
@@ -43,6 +46,7 @@ class Excel2Quadra:
             )
         else:
 
+            print(self.dictCompte)
             releve = ReadBankStatement(self.dfIn)
         
             # Si l option ajoutant la deuxieme ligne au libelle est activée

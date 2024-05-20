@@ -1,7 +1,6 @@
 import pandas as pd
 from utils import QuadraPyUtils as Utils
 
-
 class WriteEntries:
         
     # Le format des tuples est le suivant:
@@ -61,10 +60,12 @@ class WriteEntries:
         # Parcourir le dictionnaire des numéros de compte
         for numCompte  in self.dictCompte.keys():
             # Recupérer l'extrait de libelle associé au numéro de compte
-            pattern = self.dictCompte.get(numCompte)
-            # Si le libellé contient l'extrait
-            if pattern.lower() in libelle.lower():
-                compte = numCompte
+            patternList = self.dictCompte.get(numCompte)
+            # Parcourir tous les patterns associés au numéro de compte courant
+            for pattern in patternList:
+                # Si le libellé contient l'extrait
+                if pattern.lower() in libelle.lower():
+                    compte = numCompte
         return compte
     
 
@@ -133,7 +134,7 @@ class WriteEntries:
                         # Recuperer la date courante
                         date = self.datevalues[creditrow]
                     except KeyError:
-                        print("Pas de key pour la date associe au credit courant : ", credit)
+                        print("WARNING Pas de key pour la date associe au credit courant : ", credit)
                         pass  
                     else: 
                         # Get the numPiece
@@ -186,7 +187,7 @@ class WriteEntries:
                         # Creer une entree de crédit
                         (newEntry, newCtrpEntry) = self.addCredit(date, libelle, compte, numPiece, credit)
                     except KeyError:
-                        print("Pas de données de débit ou crédit pour la date du ",self.datevalues[daterow])
+                        print("WARNING Pas de données de débit ou crédit pour la date du ",self.datevalues[daterow])
                     else:
                         # Ajouter la nouvelle entrée
                         self.writeNewEntry(newEntry, newCtrpEntry)
